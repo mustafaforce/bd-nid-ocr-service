@@ -1,0 +1,5 @@
+.venv/
+venv/
+__pycache__/
+.env
+models/nid_donut_model/

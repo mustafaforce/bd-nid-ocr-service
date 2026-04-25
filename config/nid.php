@@ -14,6 +14,12 @@ return [
             'process_timeout_seconds' => (float) env('NID_OCR_PROCESS_TIMEOUT_SECONDS', 5),
             'process_idle_timeout_seconds' => (float) env('NID_OCR_PROCESS_IDLE_TIMEOUT_SECONDS', 5),
         ],
+        'donut' => [
+            'url' => env('NID_DONUT_URL', 'http://127.0.0.1:8100'),
+            'timeout' => (int) env('NID_DONUT_TIMEOUT', 30),
+            'health_check_timeout' => (int) env('NID_DONUT_HEALTH_TIMEOUT', 3),
+            'fallback_to_tesseract' => (bool) env('NID_DONUT_FALLBACK', true),
+        ],
     ],
 
     'upload' => [

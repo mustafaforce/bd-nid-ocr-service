@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+transformers
+torch
+pillow
+python-multipart
+python-dotenv

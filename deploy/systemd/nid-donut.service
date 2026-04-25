@@ -1,0 +1,17 @@
+[Unit]
+Description=NID Donut OCR Microservice
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/nid-donut-service
+EnvironmentFile=/var/www/nid-donut-service/.env
+ExecStart=/var/www/nid-donut-service/.venv/bin/uvicorn inference_server:app --host 127.0.0.1 --port 8100 --workers 2
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
