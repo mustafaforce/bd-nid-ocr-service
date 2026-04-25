@@ -47,8 +47,10 @@ class ExtractNidInformationTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('data.nid_number', '19951234567890123')
-            ->assertJsonPath('data.name.en', 'MD RAKIB HASAN')
-            ->assertJsonPath('data.name.bn', 'মোঃ রাকিব হাসান')
+            ->assertJsonPath('data.name', 'MD RAKIB HASAN')
+            ->assertJsonPath('data.father_name', 'MD ABDUL KADER')
+            ->assertJsonPath('data.mother_name', 'MST RAHIMA BEGUM')
+            ->assertJsonPath('data.address', 'House 12, Road 3, Dhaka')
             ->assertJsonPath('data.blood_group', 'B+')
             ->assertJsonPath('data.date_of_birth', '12/05/1995')
             ->assertJsonPath('data.issue_date', '01/01/2024');

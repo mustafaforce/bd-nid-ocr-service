@@ -17,28 +17,32 @@ final class NidTextParser
         $lines = $this->prepareLines($combinedText);
 
         $info = new NidCardInfo(
-            name: [
-                'bn' => $this->extractField($lines, ['/নাম\s*[:ঃ-]?\s*(.*)$/u']),
-                'en' => $this->extractField($lines, ['/\bname\b\s*[:ঃ-]?\s*(.*)$/iu']),
-            ],
-            fatherName: [
-                'bn' => $this->extractField($lines, ['/পিতার?\s*(?:নাম)?\s*[:ঃ-]?\s*(.*)$/u']),
-                'en' => $this->extractField($lines, ['/\bfather(?:\s*[\x{2019}\'`]?s)?\s*(?:name)?\s*[:ঃ-]?\s*(.*)$/iu']),
-            ],
-            motherName: [
-                'bn' => $this->extractField($lines, ['/মাতার?\s*(?:নাম)?\s*[:ঃ-]?\s*(.*)$/u']),
-                'en' => $this->extractField($lines, ['/\bmother(?:\s*[\x{2019}\'`]?s)?\s*(?:name)?\s*[:ঃ-]?\s*(.*)$/iu']),
-            ],
-            address: [
-                'bn' => $this->extractField($backLines, ['/ঠিকানা\s*[:ঃ-]?\s*(.*)$/u'], allowMultiline: true)
-                    ?? $this->extractField($lines, ['/ঠিকানা\s*[:ঃ-]?\s*(.*)$/u'], allowMultiline: true),
-                'en' => $this->extractField($backLines, ['/\baddress\b\s*[:ঃ-]?\s*(.*)$/iu'], allowMultiline: true)
-                    ?? $this->extractField($lines, ['/\baddress\b\s*[:ঃ-]?\s*(.*)$/iu'], allowMultiline: true),
-            ],
+            name: $this->extractEnglishField($frontLines, [
+                '/\bname\b[\s:ঃ\-]*(.*)$/iu',
+                '/^name[\s:ঃ\-]+(.*)$/iu',
+            ]) ?? $this->extractEnglishField($lines, [
+                '/\bname\b[\s:ঃ\-]*(.*)$/iu',
+                '/^name[\s:ঃ\-]+(.*)$/iu',
+            ]),
+            fatherName: $this->extractEnglishField($frontLines, [
+                '/\bfather(?:\s*[\x{2019}\'`]?s)?\s*(?:name)?[\s:ঃ\-]*(.*)$/iu',
+            ]) ?? $this->extractEnglishField($lines, [
+                '/\bfather(?:\s*[\x{2019}\'`]?s)?\s*(?:name)?[\s:ঃ\-]*(.*)$/iu',
+            ]),
+            motherName: $this->extractEnglishField($frontLines, [
+                '/\bmother(?:\s*[\x{2019}\'`]?s)?\s*(?:name)?[\s:ঃ\-]*(.*)$/iu',
+            ]) ?? $this->extractEnglishField($lines, [
+                '/\bmother(?:\s*[\x{2019}\'`]?s)?\s*(?:name)?[\s:ঃ\-]*(.*)$/iu',
+            ]),
+            address: $this->extractEnglishField($backLines, [
+                '/\baddress\b[\s:ঃ\-]*(.*)$/iu',
+            ], allowMultiline: true) ?? $this->extractEnglishField($lines, [
+                '/\baddress\b[\s:ঃ\-]*(.*)$/iu',
+            ], allowMultiline: true),
             nidNumber: $this->extractNidNumber($combinedText),
-            dateOfBirth: $this->extractDate($frontText, ['date of birth', 'জন্ম তারিখ', 'জন্মতারিখ', 'dob'], false),
+            dateOfBirth: $this->extractDate($frontText, ['date of birth', 'dob', 'birth'], false),
             bloodGroup: $this->extractBloodGroup($combinedText),
-            issueDate: $this->extractDate($backText, ['date of issue', 'ইস্যু', 'issued', 'প্রদানের তারিখ'], false),
+            issueDate: $this->extractDate($backText, ['date of issue', 'issue date', 'issued'], false),
         );
 
         return [
@@ -91,6 +95,21 @@ final class NidTextParser
 
     /**
      * @param  array<int, string>  $lines
+     * @param  array<int, string>  $patterns
+     */
+    private function extractEnglishField(array $lines, array $patterns, bool $allowMultiline = false): ?string
+    {
+        $value = $this->extractField($lines, $patterns, $allowMultiline);
+
+        if ($value === null) {
+            return null;
+        }
+
+        return preg_match('/[A-Za-z]/u', $value) ? $value : null;
+    }
+
+    /**
+     * @param  array<int, string>  $lines
      */
     private function collectFollowingLines(array $lines, int $fromIndex, bool $allowMultiline): string
     {
@@ -117,6 +136,11 @@ final class NidTextParser
     private function cleanExtractedValue(string $value): string
     {
         $value = trim(preg_replace('/^[\s:ঃ\-|>~`]+/u', '', $value) ?? $value);
+        $value = trim((string) preg_replace(
+            '/\s+(father(?:\s*[\x{2019}\'`]?s)?|mother(?:\s*[\x{2019}\'`]?s)?|date\s*of\s*birth|dob|address|nid|national\s*id|blood\s*group|issue\s*date)\b.*$/iu',
+            '',
+            $value,
+        ));
         $value = trim(preg_replace('/\s{2,}/u', ' ', $value) ?? $value);
         $value = trim($value, " \t\n\r\0\x0B:|>~`");
 
@@ -133,7 +157,7 @@ final class NidTextParser
 
     private function looksLikeFieldLabel(string $line): bool
     {
-        return (bool) preg_match('/^(name|father|mother|address|date|dob|id|nid|রক্ত|নাম|পিতার|মাতার|ঠিকানা|জন্ম)/iu', $line);
+        return (bool) preg_match('/^(name|father|mother|address|date|dob|id|nid|blood|issue)/iu', $line);
     }
 
     private function extractNidNumber(string $text): ?string
@@ -289,7 +313,7 @@ final class NidTextParser
             $warnings[] = 'NID number not detected.';
         }
 
-        if ($info->name['bn'] === null && $info->name['en'] === null) {
+        if ($info->name === null) {
             $warnings[] = 'Name not detected.';
         }
 

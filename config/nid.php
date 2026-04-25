@@ -5,7 +5,7 @@ return [
         'driver' => env('NID_OCR_DRIVER', 'tesseract'),
         'tesseract' => [
             'binary' => env('NID_TESSERACT_BINARY', 'tesseract'),
-            'languages' => env('NID_OCR_LANGUAGES', 'ben+eng'),
+            'languages' => env('NID_OCR_LANGUAGES', 'eng'),
             'psm' => env('NID_TESSERACT_PSM', '6'),
             'psm_candidates' => env('NID_TESSERACT_PSM_CANDIDATES', '6,11'),
             'preprocess_enabled' => env('NID_OCR_PREPROCESS_ENABLED', true),

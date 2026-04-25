@@ -16,7 +16,7 @@
         <section class="nid-hero">
             <p class="nid-eyebrow">Bangladesh NID OCR</p>
             <h1>NID Extraction Console</h1>
-            <p>Upload front and back photo. API reads Bangla + English fields and returns normalized data.</p>
+            <p>Upload front and back photo. API reads English fields and returns normalized data.</p>
         </section>
 
         <section class="nid-panel">
@@ -40,7 +40,7 @@
                 <div class="nid-controls">
                     <label class="nid-lang-control" for="ocr_languages">
                         <span>OCR Languages</span>
-                        <input id="ocr_languages" name="ocr_languages" type="text" value="ben+eng" maxlength="32" autocomplete="off">
+                        <input id="ocr_languages" name="ocr_languages" type="text" value="eng" maxlength="32" autocomplete="off">
                     </label>
 
                     <button type="submit" class="nid-submit" data-submit-btn>
